@@ -71,12 +71,12 @@ class Beacon(Model):
 
             # Basket Sequence encoder
             with tf.name_scope("Basket_Sequence_Encoder"):
-                self.A = self.create_GTLayer(self.list_A)
+                A_gtn = self.create_GTLayer(self.list_A)
                 self.bseq = tf.sparse_placeholder(shape=(batch_size, self.max_seq_length, self.nb_items), dtype=tf.float32, name="bseq_input")
                 self.bseq_length = tf.placeholder(dtype=tf.int32, shape=(batch_size,), name='bseq_length')
 
                 self.bseq_encoder = tf.sparse_reshape(self.bseq, shape=[-1, self.nb_items], name="bseq_2d")
-                self.bseq_encoder = self.encode_basket_graph(self.bseq_encoder, self.C_Basket, True)
+                self.bseq_encoder = self.encode_basket_graph(self.bseq_encoder, A_gtn, self.C_Basket, True)
                 self.bseq_encoder = tf.reshape(self.bseq_encoder, shape=[-1, self.max_seq_length, self.nb_items], name="bsxMxN")
                 self.bseq_encoder = create_basket_encoder(self.bseq_encoder, emb_dim, param_initializer=tf.initializers.he_uniform(), activation_func=tf.nn.relu)       
 
@@ -92,7 +92,7 @@ class Beacon(Model):
                 W_H = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(), shape=(self.rnn_units, self.nb_items), name="W_H")
                 
                 next_item_probs = tf.nn.sigmoid(tf.matmul(h_T, W_H))
-                logits = (1.0 - self.alpha) * next_item_probs + self.alpha * self.encode_basket_graph(next_item_probs, tf.constant(0.0))
+                logits = (1.0 - self.alpha) * next_item_probs + self.alpha * self.encode_basket_graph(next_item_probs, A_gtn, tf.constant(0.0))
 
             with tf.name_scope("Loss"):
                 self.loss = self.compute_loss(logits, self.y)
@@ -162,14 +162,14 @@ class Beacon(Model):
         return self.session.run([self.top_k_values, self.top_k_indices],
                                  feed_dict={self.bseq_length: s_length, self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
 
-    def encode_basket_graph(self, binput, beta, is_sparse=False):
+    def encode_basket_graph(self, binput, A, beta, is_sparse=False):
         with tf.name_scope("Graph_Encoder"):
             if is_sparse:
                 encoder = tf.sparse_tensor_dense_matmul(binput, self.I_B_Diag, name="XxI_B") 
-                encoder += self.relu_with_threshold(tf.sparse_tensor_dense_matmul(binput, self.A, name="XxA"), beta)  
+                encoder += self.relu_with_threshold(tf.sparse_tensor_dense_matmul(binput, A, name="XxA"), beta)
             else:
                 encoder = tf.matmul(binput, self.I_B_Diag, name="XxI_B")
-                encoder += self.relu_with_threshold(tf.matmul(binput, self.A, name="XxA"), beta) 
+                encoder += self.relu_with_threshold(tf.matmul(binput, A, name="XxA"), beta)
         return encoder
 
     def create_GTConv(self, A, weight):
