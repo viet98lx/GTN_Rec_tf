@@ -54,7 +54,7 @@ class Beacon(Model):
         with tf.variable_scope(self.scope):
             # Initialized for n_hop adjacency matrix
             # self.A = tf.constant(adj_matrix.todense(), name="Adj_Matrix", dtype=tf.float32)
-            self.list_A = tf.constant(A, name="List Adj_Matrix", dtype=tf.float32)
+            self.list_A = tf.constant(A, name="List_adj_Matrix", dtype=tf.float32)
             uniform_initializer = np.ones(shape=(self.nb_items), dtype=np.float32) / self.nb_items
             self.I_B = tf.get_variable(dtype=tf.float32, initializer=tf.constant(uniform_initializer, dtype=tf.float32), name="I_B")
             self.I_B_Diag = tf.nn.relu(tf.diag(self.I_B, name="I_B_Diag"))
