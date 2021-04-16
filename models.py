@@ -65,9 +65,9 @@ class Beacon(Model):
 
             # GTN forward
             self.gtn_weight_1 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
-                                       shape=(self.gtn_out_channels, tf.shape(self.list_A)[1], 1, 1), name="conv1_w")
+                                       shape=(self.gtn_out_channels, A.shape[1], 1, 1), name="conv1_w")
             self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
-                                       shape=(self.gtn_out_channels, tf.shape(self.list_A)[1], 1, 1), name="conv2_w")
+                                       shape=(self.gtn_out_channels, A.shape[1], 1, 1), name="conv2_w")
             self.A = self.create_GTLayer(self.list_A, self.gtn_weight_1, self.gtn_weight_2)
 
             # Basket Sequence encoder
