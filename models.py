@@ -68,10 +68,10 @@ class Beacon(Model):
                                        shape=(self.gtn_out_channels, A.shape[1], 1, 1), name="conv1_w")
             self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
                                        shape=(self.gtn_out_channels, A.shape[1], 1, 1), name="conv2_w")
-            self.A = self.create_GTLayer(self.list_A)
 
             # Basket Sequence encoder
             with tf.name_scope("Basket_Sequence_Encoder"):
+                self.A = self.create_GTLayer(self.list_A)
                 self.bseq = tf.sparse_placeholder(shape=(batch_size, self.max_seq_length, self.nb_items), dtype=tf.float32, name="bseq_input")
                 self.bseq_length = tf.placeholder(dtype=tf.int32, shape=(batch_size,), name='bseq_length')
 
