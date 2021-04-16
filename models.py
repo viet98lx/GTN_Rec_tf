@@ -68,7 +68,7 @@ class Beacon(Model):
                                        shape=(self.gtn_out_channels, A.shape[1], 1, 1), name="conv1_w")
             self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
                                        shape=(self.gtn_out_channels, A.shape[1], 1, 1), name="conv2_w")
-            self.A = self.create_GTLayer(self.list_A, self.gtn_weight_1, self.gtn_weight_2)
+            self.A = self.create_GTLayer(self.list_A)
 
             # Basket Sequence encoder
             with tf.name_scope("Basket_Sequence_Encoder"):
@@ -177,9 +177,9 @@ class Beacon(Model):
         A_conv = tf.reduce_sum(att_A, axis=1)
         return A_conv
 
-    def create_GTLayer(self, A, weight_1, weight_2):
-        a = self.create_GTConv(A, weight_1)
-        b = self.create_GTConv(A, weight_2)
+    def create_GTLayer(self, A):
+        a = self.create_GTConv(A, self.gtn_weight_1)
+        b = self.create_GTConv(A, self.gtn_weight_2)
         H = tf.matmul(a, b)
         return H[0]
 
