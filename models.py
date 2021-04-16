@@ -45,16 +45,15 @@ class Beacon(Model):
         self.top_k = top_k
         self.gtn_in_channels = gtn_in_channels
         self.gtn_out_channels = gtn_out_channels
-
+        for i, edge in enumerate(adj_matrix):
+            if i == 0:
+                A = np.expand_dims(edge.todense(), axis=-1)
+            else:
+                A = np.concatenate((A, np.expand_dims(edge.todense(), axis=-1)), axis=-1)
+        A = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
         with tf.variable_scope(self.scope):
             # Initialized for n_hop adjacency matrix
             # self.A = tf.constant(adj_matrix.todense(), name="Adj_Matrix", dtype=tf.float32)
-            for i, edge in enumerate(adj_matrix):
-                if i == 0:
-                    A = tf.expand_dims(tf.convert_to_tensor(edge.todense(), dtype=tf.float32), axis=-1)
-                else:
-                    A = tf.concat((A, tf.expand_dims(tf.convert_to_tensor(edge.todense(), dtype=tf.float32), axis=-1)), axis=-1)
-            A = tf.transpose(tf.expand_dims(A, axis=0), perm=[0, 3, 1, 2])
             self.list_A = tf.constant(A, name="List Adj_Matrix", dtype=tf.float32)
             uniform_initializer = np.ones(shape=(self.nb_items), dtype=np.float32) / self.nb_items
             self.I_B = tf.get_variable(dtype=tf.float32, initializer=tf.constant(uniform_initializer, dtype=tf.float32), name="I_B")
@@ -65,11 +64,11 @@ class Beacon(Model):
             self.y = tf.placeholder(dtype=tf.float32, shape=(batch_size, self.nb_items), name='Target_basket')
 
             # GTN forward
-            gtn_weight_1 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
-                                       shape=(self.gtn_out_channels, tf.shape(A)[1], 1, 1), name="conv1_w")
-            gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
-                                       shape=(self.gtn_out_channels, tf.shape(A)[1], 1, 1), name="conv2_w")
-            self.A = self.create_GTLayer(self.list_A, gtn_weight_1, gtn_weight_2)
+            self.gtn_weight_1 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
+                                       shape=(self.gtn_out_channels, tf.shape(self.list_A)[1], 1, 1), name="conv1_w")
+            self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
+                                       shape=(self.gtn_out_channels, tf.shape(self.list_A)[1], 1, 1), name="conv2_w")
+            self.A = self.create_GTLayer(self.list_A, self.gtn_weight_1, self.gtn_weight_2)
 
             # Basket Sequence encoder
             with tf.name_scope("Basket_Sequence_Encoder"):
