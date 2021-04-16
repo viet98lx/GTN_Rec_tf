@@ -175,7 +175,7 @@ class Beacon(Model):
     def create_GTConv(self, A, weight):
         att_A = tf.multiply(A, tf.nn.softmax(weight, axis=1))
         A_conv = tf.reduce_sum(att_A, axis=1)
-        return A_conv
+        return A_conv[0]
 
     def create_GTLayer(self, A, weight_1, weight_2):
         a = self.create_GTConv(A, weight_1)
