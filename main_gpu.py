@@ -155,7 +155,7 @@ if config.train_mode:
                              config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, config.gtn_in, config.gtn_out)
 
         print(" + Initialize parameters")
-        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A})
+        sess.run(tf.global_variables_initializer())
 
         print("================== TRAINING ====================")
         print("@Start training")
@@ -175,7 +175,7 @@ if config.prediction_mode or config.tune_mode:
                         config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, config.gtn_in, config.gtn_out)
 
         print(" + Initialize parameters")
-        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A})
+        sess.run(tf.global_variables_initializer())
 
         print("===============================================\n")
         print("@Restore the model from " + model_dir)
