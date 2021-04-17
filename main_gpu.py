@@ -129,7 +129,7 @@ for i, edge in enumerate(edges):
         A = np.expand_dims(edge.todense(), axis=-1)
     else:
         A = np.concatenate((A, np.expand_dims(edge.todense(), axis=-1)), axis=-1)
-A_tensor = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
+A = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
 
 print("@Compute #batches in train/validation/test")
 total_train_batches = utils.compute_total_batches(nb_train, config.batch_size)
@@ -155,7 +155,7 @@ if config.train_mode:
                              config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, config.gtn_in, config.gtn_out)
 
         print(" + Initialize parameters")
-        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A_tensor})
+        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A})
 
         print("================== TRAINING ====================")
         print("@Start training")
@@ -175,7 +175,7 @@ if config.prediction_mode or config.tune_mode:
                         config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, config.gtn_in, config.gtn_out)
 
         print(" + Initialize parameters")
-        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A_tensor})
+        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A})
 
         print("===============================================\n")
         print("@Restore the model from " + model_dir)
