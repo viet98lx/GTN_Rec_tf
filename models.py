@@ -133,29 +133,29 @@ class Beacon(Model):
             self.merged_summary_op = tf.summary.merge_all()
             self.val_merged_summary_op = tf.summary.merge_all(key='validation')
 
-    def train_batch(self, s, s_length, y, A):
+    def train_batch(self, s, s_length, y):
         bseq_indices, bseq_values = self.get_sparse_tensor_info(s, True)
 
         _, loss, recall, summary = self.session.run(
             [self.update_grads, self.loss, self.recall_at_k, self.merged_summary_op],
             feed_dict={self.bseq_length: s_length, self.y: y,
-                       self.bseq.indices: bseq_indices, self.bseq.values: bseq_values, self.A: A})
+                       self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
 
         return loss, recall, summary
 
-    def validate_batch(self, s, s_length, y, A):
+    def validate_batch(self, s, s_length, y):
         bseq_indices, bseq_values = self.get_sparse_tensor_info(s, True)
 
         loss, recall, summary = self.session.run(
             [self.loss, self.recall_at_k, self.val_merged_summary_op],
             feed_dict={ self.bseq_length: s_length, self.y: y,
-                        self.bseq.indices: bseq_indices, self.bseq.values: bseq_values, self.A: A})
+                        self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
         return loss, recall, summary
 
-    def generate_prediction(self, s, s_length, A):
+    def generate_prediction(self, s, s_length):
         bseq_indices, bseq_values = self.get_sparse_tensor_info(s, True)
         return self.session.run([self.top_k_values, self.top_k_indices],
-                                 feed_dict={self.bseq_length: s_length, self.bseq.indices: bseq_indices, self.bseq.values: bseq_values, self.A: A})
+                                 feed_dict={self.bseq_length: s_length, self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
 
     def encode_basket_graph(self, binput, A, beta, is_sparse=False):
         with tf.name_scope("Graph_Encoder"):

@@ -129,7 +129,7 @@ for i, edge in enumerate(edges):
         A = np.expand_dims(edge.todense(), axis=-1)
     else:
         A = np.concatenate((A, np.expand_dims(edge.todense(), axis=-1)), axis=-1)
-A = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
+A_tensor = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
 
 print("@Compute #batches in train/validation/test")
 total_train_batches = utils.compute_total_batches(nb_train, config.batch_size)
@@ -155,14 +155,14 @@ if config.train_mode:
                              config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, config.gtn_in, config.gtn_out)
 
         print(" + Initialize parameters")
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A_tensor})
 
         print("================== TRAINING ====================")
         print("@Start training")
         procedure.train_network(sess, net, train_generator, validate_generator, config.nb_epoch,
                                 total_train_batches, total_validate_batches, config.display_step,
                                 config.early_stopping_k, config.epsilon, tensorboard_dir, model_dir,
-                                test_generator, total_test_batches, A)
+                                test_generator, total_test_batches)
 
         # Reset before re-load
     tf.reset_default_graph()
@@ -175,7 +175,7 @@ if config.prediction_mode or config.tune_mode:
                         config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, config.gtn_in, config.gtn_out)
 
         print(" + Initialize parameters")
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer(), feed_dict={net.A: A_tensor})
 
         print("===============================================\n")
         print("@Restore the model from " + model_dir)
@@ -190,7 +190,7 @@ if config.prediction_mode or config.tune_mode:
         if config.tune_mode:
             print("@Start tunning")
             validate_generator = utils.seq_batch_generator(validate_instances, item_dict, config.batch_size, False)
-            procedure.tune(net, validate_generator, total_validate_batches, config.display_step, output_dir + "/topN/val_recall.txt", A)
+            procedure.tune(net, validate_generator, total_validate_batches, config.display_step, output_dir + "/topN/val_recall.txt")
 
         # Testing
         # ==================================================
@@ -199,6 +199,6 @@ if config.prediction_mode or config.tune_mode:
 
             print("@Start generating prediction")
             procedure.generate_prediction(net, test_generator, total_test_batches, config.display_step, 
-                        rev_item_dict, output_dir + "/topN/prediction.txt", A)
+                        rev_item_dict, output_dir + "/topN/prediction.txt")
         
     tf.reset_default_graph()
