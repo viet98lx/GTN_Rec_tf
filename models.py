@@ -45,16 +45,11 @@ class Beacon(Model):
         self.top_k = top_k
         self.gtn_in_channels = gtn_in_channels
         self.gtn_out_channels = gtn_out_channels
-        for i, edge in enumerate(adj_matrix):
-            if i == 0:
-                A = np.expand_dims(edge.todense(), axis=-1)
-            else:
-                A = np.concatenate((A, np.expand_dims(edge.todense(), axis=-1)), axis=-1)
-        A = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
         with tf.variable_scope(self.scope):
             # Initialized for n_hop adjacency matrix
             # self.A = tf.constant(adj_matrix.todense(), name="Adj_Matrix", dtype=tf.float32)
-            self.list_A = tf.constant(A, name="List_adj_Matrix", dtype=tf.float32)
+            # self.list_A = tf.constant(A, name="List_adj_Matrix", dtype=tf.float32)
+            self.A = tf.placeholder(dtype=tf.float32, shape=(self.gtn_out_channels, self.gtn_in_channels, self.nb_items, self.nb_items), name='A_tensor')
             uniform_initializer = np.ones(shape=(self.nb_items), dtype=np.float32) / self.nb_items
             self.I_B = tf.get_variable(dtype=tf.float32, initializer=tf.constant(uniform_initializer, dtype=tf.float32), name="I_B")
             self.I_B_Diag = tf.nn.relu(tf.diag(self.I_B, name="I_B_Diag"))
@@ -71,7 +66,7 @@ class Beacon(Model):
 
             # Basket Sequence encoder
             with tf.name_scope("Basket_Sequence_Encoder"):
-                A_gtn = self.create_GTLayer(self.list_A)
+                A_gtn = self.create_GTLayer(self.A)
                 self.bseq = tf.sparse_placeholder(shape=(batch_size, self.max_seq_length, self.nb_items), dtype=tf.float32, name="bseq_input")
                 self.bseq_length = tf.placeholder(dtype=tf.int32, shape=(batch_size,), name='bseq_length')
 
@@ -138,29 +133,29 @@ class Beacon(Model):
             self.merged_summary_op = tf.summary.merge_all()
             self.val_merged_summary_op = tf.summary.merge_all(key='validation')
 
-    def train_batch(self, s, s_length, y):
+    def train_batch(self, s, s_length, y, A):
         bseq_indices, bseq_values = self.get_sparse_tensor_info(s, True)
 
         _, loss, recall, summary = self.session.run(
             [self.update_grads, self.loss, self.recall_at_k, self.merged_summary_op],
             feed_dict={self.bseq_length: s_length, self.y: y,
-                       self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
+                       self.bseq.indices: bseq_indices, self.bseq.values: bseq_values, self.A: A})
 
         return loss, recall, summary
 
-    def validate_batch(self, s, s_length, y):
+    def validate_batch(self, s, s_length, y, A):
         bseq_indices, bseq_values = self.get_sparse_tensor_info(s, True)
 
         loss, recall, summary = self.session.run(
             [self.loss, self.recall_at_k, self.val_merged_summary_op],
             feed_dict={ self.bseq_length: s_length, self.y: y,
-                        self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
+                        self.bseq.indices: bseq_indices, self.bseq.values: bseq_values, self.A: A})
         return loss, recall, summary
 
-    def generate_prediction(self, s, s_length):
+    def generate_prediction(self, s, s_length, A):
         bseq_indices, bseq_values = self.get_sparse_tensor_info(s, True)
         return self.session.run([self.top_k_values, self.top_k_indices],
-                                 feed_dict={self.bseq_length: s_length, self.bseq.indices: bseq_indices, self.bseq.values: bseq_values})
+                                 feed_dict={self.bseq_length: s_length, self.bseq.indices: bseq_indices, self.bseq.values: bseq_values, self.A: A})
 
     def encode_basket_graph(self, binput, A, beta, is_sparse=False):
         with tf.name_scope("Graph_Encoder"):

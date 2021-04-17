@@ -9,7 +9,7 @@ import time
 def train_network(sess, net, train_generator, validate_generator, nb_epoch, 
                   total_train_batches, total_validate_batches, display_step,
                   early_stopping_k, epsilon, tensorboard_dir, output_dir,
-                  test_generator, total_test_batches):
+                  test_generator, total_test_batches, A):
     summary_writer = None
     if tensorboard_dir is not None:
         summary_writer = tf.summary.FileWriter(tensorboard_dir)
@@ -27,7 +27,7 @@ def train_network(sess, net, train_generator, validate_generator, nb_epoch,
 
         for batch_id, data in train_generator:
             start_time = time.time()
-            loss, recall, summary = net.train_batch(data['S'], data['L'], data['Y'])
+            loss, recall, summary = net.train_batch(data['S'], data['L'], data['Y'], A)
 
             train_loss += loss
             avg_train_loss = train_loss / (batch_id + 1)
@@ -62,7 +62,7 @@ def train_network(sess, net, train_generator, validate_generator, nb_epoch,
         val_loss = 0.0
         val_recall = 0.0
         for batch_id, data in validate_generator:
-            loss, recall, summary = net.validate_batch(data['S'], data['L'], data['Y'])
+            loss, recall, summary = net.validate_batch(data['S'], data['L'], data['Y'], A)
             
             val_loss += loss
             avg_val_loss = val_loss / (batch_id + 1)
@@ -94,7 +94,7 @@ def train_network(sess, net, train_generator, validate_generator, nb_epoch,
         test_loss = 0.0
         test_recall = 0.0
         for batch_id, data in test_generator:
-            loss, recall, _ = net.validate_batch(data['S'], data['L'], data['Y'])
+            loss, recall, _ = net.validate_batch(data['S'], data['L'], data['Y'], A)
             
             test_loss += loss
             avg_test_loss = test_loss / (batch_id + 1)
@@ -153,12 +153,12 @@ def train_network(sess, net, train_generator, validate_generator, nb_epoch,
             print("# The training is early stopped at Epoch " + str(epoch))
             break
 
-def tune(net, data_generator, total_batches, display_step, output_file):
+def tune(net, data_generator, total_batches, display_step, output_file, A):
     f = open(output_file, "w")
     val_loss = 0.0
     val_recall = 0.0
     for batch_id, data in data_generator:
-        loss, recall, _ = net.validate_batch(data['S'], data['L'], data['Y'])
+        loss, recall, _ = net.validate_batch(data['S'], data['L'], data['Y'], A)
             
         val_loss += loss
         avg_val_loss = val_loss / (batch_id + 1)
@@ -178,11 +178,11 @@ def tune(net, data_generator, total_batches, display_step, output_file):
     f.close()
 
 
-def generate_prediction(net, data_generator, total_test_batches, display_step, inv_item_dict, output_file):
+def generate_prediction(net, data_generator, total_test_batches, display_step, inv_item_dict, output_file, A):
     f = open(output_file, "w")
 
     for batch_id, data in data_generator:
-        values, indices = net.generate_prediction(data['S'], data['L'])
+        values, indices = net.generate_prediction(data['S'], data['L'], A)
 
         for i, (seq_val, seq_ind) in enumerate(zip(values, indices)):
             f.write("Target:" + data['O'][i])
