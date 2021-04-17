@@ -50,8 +50,7 @@ class Beacon(Model):
             # self.A = tf.constant(adj_matrix.todense(), name="Adj_Matrix", dtype=tf.float32)
             # self.list_A = tf.constant(A, name="List_adj_Matrix", dtype=tf.float32)
             # self.A = tf.placeholder(dtype=tf.float32, shape=(self.gtn_out_channels, self.gtn_in_channels, self.nb_items, self.nb_items), name='A_tensor')
-            self.A = tf.get_variable(shape=(self.gtn_out_channels, self.gtn_in_channels, self.nb_items, self.nb_items), initializer=adj_matrix, trainable=False,
-                            name='A_tensor', dtype=tf.float32)
+            self.A = tf.get_variable(initializer=adj_matrix, trainable=False, name='A_tensor', dtype=tf.float32)
             uniform_initializer = np.ones(shape=(self.nb_items), dtype=np.float32) / self.nb_items
             self.I_B = tf.get_variable(dtype=tf.float32, initializer=tf.constant(uniform_initializer, dtype=tf.float32), name="I_B")
             self.I_B_Diag = tf.nn.relu(tf.diag(self.I_B, name="I_B_Diag"))
