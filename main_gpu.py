@@ -61,7 +61,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 gpu_config = tf.ConfigProto()
 gpu_config.gpu_options.allow_growth = True
-gpu_config.log_device_placement = False
+gpu_config.log_device_placement = True
 
 # ----------------------- MAIN PROGRAM -----------------------
 
@@ -152,7 +152,7 @@ if config.train_mode:
         # Initialize the network
         print(" + Initialize the network")
         net = models.Beacon(sess, config.emb_dim, config.rnn_unit, config.alpha, MAX_SEQ_LENGTH, item_probs, A, config.top_k,
-                             config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, A.shape[2], config.gtn_out)
+                             config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, A.shape[1], config.gtn_out)
 
         print(" + Initialize parameters")
         sess.run(tf.global_variables_initializer())
@@ -172,7 +172,7 @@ if config.prediction_mode or config.tune_mode:
         print(" + Initialize the network")
 
         net = models.Beacon(sess, config.emb_dim, config.rnn_unit, config.alpha, MAX_SEQ_LENGTH, item_probs, A, config.top_k,
-                        config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, A.shape[2], config.gtn_out)
+                        config.batch_size, config.rnn_cell_type, config.dropout_rate, config.seed, config.learning_rate, A.shape[1], config.gtn_out)
 
         print(" + Initialize parameters")
         sess.run(tf.global_variables_initializer())
