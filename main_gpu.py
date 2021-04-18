@@ -120,7 +120,7 @@ else:
 
 edges = []
 for i in range(config.num_edges):
-    adj_matrix = sp.load_npz(data_dir + 'adj_matrix/v2_r_matrix_' + str(i+1) + 'w.npz')
+    adj_matrix = sp.load_npz(data_dir + 'adj_matrix/r_matrix_' + str(i+1) + 'w.npz')
     edges.append(adj_matrix)
 
 # adj_matrix = edges
