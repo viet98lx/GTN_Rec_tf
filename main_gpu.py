@@ -61,7 +61,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 gpu_config = tf.ConfigProto()
 gpu_config.gpu_options.allow_growth = True
-gpu_config.log_device_placement = True
+gpu_config.log_device_placement = False
 
 # ----------------------- MAIN PROGRAM -----------------------
 
