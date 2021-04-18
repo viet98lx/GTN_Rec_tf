@@ -56,7 +56,7 @@ class Beacon(Model):
             self.I_B_Diag = tf.nn.relu(tf.diag(self.I_B, name="I_B_Diag"))
 
 
-            self.C_Basket = tf.get_variable(dtype=tf.float32, initializer=tf.constant(0.0), name="C_B")
+            self.C_Basket = tf.get_variable(dtype=tf.float32, initializer=tf.constant(np.mean(adj_matrix)), name="C_B")
             self.y = tf.placeholder(dtype=tf.float32, shape=(batch_size, self.nb_items), name='Target_basket')
 
             # GTN forward
