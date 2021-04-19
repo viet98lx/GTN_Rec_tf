@@ -59,11 +59,15 @@ class Beacon(Model):
             self.C_Basket = tf.get_variable(dtype=tf.float32, initializer=tf.constant(np.mean(adj_matrix)), name="C_B")
             self.y = tf.placeholder(dtype=tf.float32, shape=(batch_size, self.nb_items), name='Target_basket')
 
+            uniform_init_gtn = np.ones(shape=(self.gtn_out_channels, self.gtn_in_channels, 1, 1))
             # GTN forward
-            self.gtn_weight_1 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
-                                       shape=(self.gtn_out_channels, self.gtn_in_channels, 1, 1), name="conv1_w")
-            self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
-                                       shape=(self.gtn_out_channels, self.gtn_in_channels, 1, 1), name="conv2_w")
+            # self.gtn_weight_1 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
+            #                            shape=(self.gtn_out_channels, self.gtn_in_channels, 1, 1), name="conv1_w")
+            # self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.initializers.glorot_uniform(),
+            #                            shape=(self.gtn_out_channels, self.gtn_in_channels, 1, 1), name="conv2_w")
+
+            self.gtn_weight_1 = tf.get_variable(dtype=tf.float32, initializer=tf.constant(uniform_init_gtn), name="conv1_w")
+            self.gtn_weight_2 = tf.get_variable(dtype=tf.float32, initializer=tf.constant(uniform_init_gtn), name="conv2_w")
 
             # Basket Sequence encoder
             with tf.name_scope("Basket_Sequence_Encoder"):
