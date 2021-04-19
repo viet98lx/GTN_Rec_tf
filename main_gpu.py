@@ -130,6 +130,7 @@ for i, edge in enumerate(edges):
         A = np.expand_dims(edge.todense(), axis=-1)
     else:
         A = np.concatenate((A, np.expand_dims(edge.todense(), axis=-1)), axis=-1)
+A = np.concatenate((A, np.expand_dims(np.eye(NB_ITEMS, dtype=float), axis=-1)), axis=-1)
 A = np.transpose(np.expand_dims(A, axis=0), (0, 3, 1, 2))
 
 print("@Compute #batches in train/validation/test")
